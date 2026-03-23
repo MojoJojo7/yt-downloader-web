@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My shitty YT downloader</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #0d0d0d;
+      --surface:   #111111;
+      --card:      #1c1c1e;
+      --btn:       #2c2c2e;
+      --accent:    #ff3b30;
+      --accent-dim:#7a1a15;
+      --text:      #ffffff;
+      --text2:     #e5e5ea;
+      --dimmed:    #8e8e93;
+      --log-green: #30d158;
+      --radius:    10px;
+      --radius-sm: 6px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 4px;
+    }
+
+    header .emoji {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    header .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── URL ROW ── */
+    .url-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #url-input {
+      flex: 1 1 260px;
+      background: var(--surface);
+      border: 1px solid #2a2a2c;
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      caret-color: var(--accent);
+    }
+
+    #url-input::placeholder {
+      color: var(--dimmed);
+    }
+
+    #url-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    button {
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 10px 16px;
+      transition: opacity 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    #btn-convert {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    #btn-convert:not(:disabled):hover {
+      background: #e02d22;
+    }
+
+    #btn-playlist {
+      background: var(--btn);
+      color: var(--text2);
+    }
+
+    #btn-playlist:not(:disabled):hover {
+      background: #3a3a3c;
+    }
+
+    #btn-stop {
+      background: var(--accent-dim);
+      color: #ffb3b0;
+    }
+
+    #btn-stop:not(:disabled):hover {
+      background: #9a211a;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--dimmed);
+      margin-bottom: -4px;
+    }
+
+    /* ── PILLS ROW ── */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      background: var(--btn);
+      color: var(--text2);
+      border: 1.5px solid transparent;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .pill:hover {
+      background: #3a3a3c;
+    }
+
+    .pill.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Audio Only — toggle style */
+    .audio-pill {
+      background: var(--btn);
+      color: var(--text2);
+      border: 1.5px solid transparent;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .audio-pill:hover {
+      background: #3a3a3c;
+    }
+
+    .audio-pill.active {
+      background: #1c3a24;
+      color: var(--log-green);
+      border-color: var(--log-green);
+    }
+
+    /* ── FORMAT ROW ── */
+    .format-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .format-divider {
+      width: 1px;
+      height: 24px;
+      background: #2a2a2c;
+      margin: 0 4px;
+    }
+
+    /* ── LOG ── */
+    #log {
+      background: var(--surface);
+      border: 1px solid #1e1e20;
+      border-radius: var(--radius-sm);
+      color: var(--log-green);
+      font-family: "SF Mono", "Fira Code", "Menlo", "Monaco", Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      padding: 14px;
+      min-height: 180px;
+      max-height: 340px;
+      overflow-y: auto;
+      resize: vertical;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    #log::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #log::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #log::-webkit-scrollbar-thumb {
+      background: #2a2a2c;
+      border-radius: 3px;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      font-size: 12px;
+      color: var(--dimmed);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 18px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--dimmed);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .status-dot.active {
+      background: var(--log-green);
+      box-shadow: 0 0 6px var(--log-green);
+      animation: pulse 1.2s infinite;
+    }
+
+    .status-dot.error {
+      background: var(--accent);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 540px) {
+      header h1 {
+        font-size: 18px;
+      }
+
+      .btn-group {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      #url-input {
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <span class="emoji">&#x1F3F4;&#x200D;&#x2620;&#xFE0F;</span>
+    <span class="badge">&#9654; Video</span>
+    <h1>My shitty YT downloader</h1>
+  </header>
+
+  <!-- MAIN CARD -->
+  <div class="card">
+
+    <!-- URL INPUT + BUTTONS -->
+    <div class="url-row">
+      <input
+        type="text"
+        id="url-input"
+        placeholder="Paste YouTube URL here&hellip;"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <div class="btn-group">
+        <button id="btn-convert">Convert</button>
+        <button id="btn-playlist">Convert Playlist</button>
+        <button id="btn-stop" disabled>&#9209; Stop</button>
+      </div>
+    </div>
+
+    <!-- QUALITY -->
+    <div>
+      <p class="section-label">Quality</p>
+      <div class="pills" id="quality-pills">
+        <button class="pill active" data-value="best">Best</button>
+        <button class="pill" data-value="1080">1080p</button>
+        <button class="pill" data-value="720">720p</button>
+        <button class="pill" data-value="480">480p</button>
+        <button class="pill" data-value="360">360p</button>
+      </div>
+    </div>
+
+    <!-- FORMAT -->
+    <div>
+      <p class="section-label">Format</p>
+      <div class="format-row">
+        <div class="pills" id="format-pills">
+          <button class="pill active" data-value="mp4">MP4</button>
+          <button class="pill" data-value="webm">WebM</button>
+          <button class="pill" data-value="mkv">MKV</button>
+        </div>
+        <div class="format-divider"></div>
+        <button class="audio-pill" id="btn-audio">&#127925; Audio Only (MP3)</button>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div>
+      <p class="section-label">Log</p>
+      <div id="log"></div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Idle</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  (function () {
+    'use strict';
+
+    // ── STATE ──────────────────────────────────────────────────────────────
+    var currentSource = null;
+
+    // ── ELEMENTS ───────────────────────────────────────────────────────────
+    var urlInput    = document.getElementById('url-input');
+    var btnConvert  = document.getElementById('btn-convert');
+    var btnPlaylist = document.getElementById('btn-playlist');
+    var btnStop     = document.getElementById('btn-stop');
+    var btnAudio    = document.getElementById('btn-audio');
+    var logEl       = document.getElementById('log');
+    var statusDot   = document.getElementById('status-dot');
+    var statusText  = document.getElementById('status-text');
+
+    // ── PILL GROUPS ────────────────────────────────────────────────────────
+    function initPillGroup(groupId) {
+      var group = document.getElementById(groupId);
+      group.addEventListener('click', function (e) {
+        var pill = e.target.closest('.pill');
+        if (!pill) return;
+        group.querySelectorAll('.pill').forEach(function (p) {
+          p.classList.remove('active');
+        });
+        pill.classList.add('active');
+      });
+    }
+
+    initPillGroup('quality-pills');
+    initPillGroup('format-pills');
+
+    function getActivePill(groupId) {
+      var active = document.querySelector('#' + groupId + ' .pill.active');
+      return active ? active.dataset.value : '';
+    }
+
+    // ── AUDIO TOGGLE ───────────────────────────────────────────────────────
+    btnAudio.addEventListener('click', function () {
+      btnAudio.classList.toggle('active');
+    });
+
+    function isAudioOnly() {
+      return btnAudio.classList.contains('active');
+    }
+
+    // ── LOG HELPERS ────────────────────────────────────────────────────────
+    function logAppend(line) {
+      var at_bottom = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 4;
+      logEl.textContent += (logEl.textContent ? '\n' : '') + line;
+      if (at_bottom) {
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+    }
+
+    function logClear() {
+      logEl.textContent = '';
+    }
+
+    // ── STATUS HELPERS ─────────────────────────────────────────────────────
+    function setStatus(state, text) {
+      statusDot.className = 'status-dot' + (state ? ' ' + state : '');
+      statusText.textContent = text;
+    }
+
+    // ── BUTTON STATE ───────────────────────────────────────────────────────
+    function setRunning(running) {
+      btnConvert.disabled  = running;
+      btnPlaylist.disabled = running;
+      btnStop.disabled     = !running;
+      urlInput.disabled    = running;
+    }
+
+    // ── STOP ───────────────────────────────────────────────────────────────
+    btnStop.addEventListener('click', function () {
+      if (currentSource) {
+        currentSource.close();
+        currentSource = null;
+      }
+      setRunning(false);
+      setStatus('', 'Stopped by user');
+      logAppend('[stopped]');
+    });
+
+    // ── DOWNLOAD ───────────────────────────────────────────────────────────
+    function startDownload(playlist) {
+      var url     = urlInput.value.trim();
+      var quality = getActivePill('quality-pills');
+      var format  = getActivePill('format-pills');
+      var audio   = isAudioOnly();
+
+      if (!url) {
+        logClear();
+        logAppend('[error] No URL provided.');
+        setStatus('error', 'No URL');
+        return;
+      }
+
+      logClear();
+      setRunning(true);
+      setStatus('active', 'Connecting...');
+
+      var formData = new FormData();
+      formData.append('url',        url);
+      formData.append('quality',    quality);
+      formData.append('format',     format);
+      formData.append('audio_only', audio ? '1' : '0');
+      formData.append('playlist',   playlist ? '1' : '0');
+
+      fetch('/download', {
+        method: 'POST',
+        body: formData
+      })
+        .then(function (res) {
+          if (!res.ok) {
+            return res.text().then(function (t) { throw new Error(t || res.statusText); });
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          var jobId = data.job_id;
+          if (!jobId) throw new Error('No job_id returned by server.');
+
+          logAppend('[job] ' + jobId);
+          setStatus('active', 'Downloading...');
+
+          var es = new EventSource('/progress/' + jobId);
+          currentSource = es;
+
+          es.addEventListener('log', function (e) {
+            logAppend(e.data);
+          });
+
+          es.addEventListener('done', function (e) {
+            es.close();
+            currentSource = null;
+            setRunning(false);
+            setStatus('', 'Done — redirecting...');
+            logAppend('[done] Redirecting to download...');
+            window.location = '/file/' + jobId;
+          });
+
+          es.addEventListener('error', function (e) {
+            var msg = e.data || 'Unknown server error.';
+            es.close();
+            currentSource = null;
+            setRunning(false);
+            setStatus('error', 'Error');
+            logAppend('[error] ' + msg);
+          });
+
+          es.onerror = function () {
+            if (currentSource === es) {
+              es.close();
+              currentSource = null;
+              setRunning(false);
+              setStatus('error', 'Connection lost');
+              logAppend('[error] Connection to server lost.');
+            }
+          };
+        })
+        .catch(function (err) {
+          setRunning(false);
+          setStatus('error', 'Error');
+          logAppend('[error] ' + err.message);
+        });
+    }
+
+    btnConvert.addEventListener('click',  function () { startDownload(false); });
+    btnPlaylist.addEventListener('click', function () { startDownload(true);  });
+
+    // ── PASTE SHORTCUT (Cmd/Ctrl+V when input unfocused) ──────────────────
+    document.addEventListener('keydown', function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'v' && document.activeElement !== urlInput) {
+        urlInput.focus();
+      }
+      if (e.key === 'Enter' && document.activeElement === urlInput) {
+        startDownload(false);
+      }
+    });
+
+  })();
+</script>
+
+</body>
+</html>
