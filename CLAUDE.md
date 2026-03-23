@@ -47,4 +47,15 @@ Le serveur de dev est aussi configuré dans `.claude/launch.json` (dossier paren
 - Format commits : type(scope): description en français
 - Tester en local avant de pusher
 
+## 🐛 Bugs connus — à régler prochaine session
+
+### [2026-03-23] Unknown server error sur vidéos longues/4K
+- **Reproduction** : vidéo 4K de 37 min → `[error] Unknown server error.`
+- **Cause probable** : timeout Railway (300s) dépassé, ou mémoire insuffisante pour merger bestvideo+bestaudio en 4K
+- **Pistes** :
+  - Augmenter le timeout Gunicorn (déjà à 300s, peut-être insuffisant)
+  - Streamer la sortie yt-dlp directement vers le client sans buffer complet en mémoire
+  - Limiter "Best" à 1080p sur Railway et réserver 4K pour un usage local
+  - Vérifier les logs Railway au moment de l'erreur
+
 *Mis à jour : 2026-03-23*
