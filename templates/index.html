@@ -186,6 +186,40 @@
       gap: 8px;
     }
 
+    /* ── TOOLTIP ── */
+    .pill-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .pill-wrapper .tooltip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2c2c2e;
+      color: #e5e5ea;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      padding: 5px 11px;
+      border-radius: 6px;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .pill-wrapper .tooltip::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 5px solid #2c2c2e;
+    }
+    .pill-wrapper:hover .tooltip { display: block; }
+
     .pill {
       background: var(--btn);
       color: var(--text2);
@@ -364,7 +398,10 @@
     <div>
       <p class="section-label">Quality</p>
       <div class="pills" id="quality-pills">
-        <button class="pill active" data-value="best">Best</button>
+        <div class="pill-wrapper">
+          <button class="pill active" data-value="best">Best</button>
+          <div class="tooltip">Highest available quality (4K+)</div>
+        </div>
         <button class="pill" data-value="1080">1080p</button>
         <button class="pill" data-value="720">720p</button>
         <button class="pill" data-value="480">480p</button>
