@@ -17,11 +17,12 @@ JOBS = {}
 JOBS_LOCK = threading.Lock()
 
 
-def build_yt_dlp_cmd(url, quality, fmt, audio_only, output_dir):
+def build_yt_dlp_cmd(url, quality, fmt, audio_only, output_dir, audio_quality="192"):
     cmd = ["yt-dlp", "--no-playlist", "--no-check-certificates"]
 
     if audio_only == "true":
-        cmd += ["-x", "--audio-format", "mp3", "--audio-quality", "0"]
+        # audio_quality = bitrate en kbps (128, 192, 320)
+        cmd += ["-x", "--audio-format", "mp3", "--audio-quality", audio_quality + "K"]
     else:
         # Construction du format string yt-dlp selon qualité + conteneur
         if quality == "best":
@@ -42,13 +43,13 @@ def build_yt_dlp_cmd(url, quality, fmt, audio_only, output_dir):
     return cmd
 
 
-def run_download(job_id, url, quality, fmt, audio_only):
+def run_download(job_id, url, quality, fmt, audio_only, audio_quality="192"):
     # Dossier temporaire propre à ce job
     tmp_base = tempfile.mkdtemp()
     output_dir = os.path.join(tmp_base, job_id)
     os.makedirs(output_dir, exist_ok=True)
 
-    cmd = build_yt_dlp_cmd(url, quality, fmt, audio_only, output_dir)
+    cmd = build_yt_dlp_cmd(url, quality, fmt, audio_only, output_dir, audio_quality)
 
     with JOBS_LOCK:
         JOBS[job_id]["logs"].append(f"$ {' '.join(cmd)}")
@@ -108,6 +109,7 @@ def download():
     quality = request.form.get("quality", "best")
     fmt = request.form.get("format", "mp4")
     audio_only = request.form.get("audio_only", "false")
+    audio_quality = request.form.get("audio_quality", "192")
 
     if not url:
         return jsonify({"error": "url is required"}), 400
@@ -125,7 +127,7 @@ def download():
     # Lancer le téléchargement dans un thread daemon pour ne pas bloquer Flask
     t = threading.Thread(
         target=run_download,
-        args=(job_id, url, quality, fmt, audio_only),
+        args=(job_id, url, quality, fmt, audio_only, audio_quality),
         daemon=True,
     )
     t.start()

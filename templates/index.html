@@ -386,6 +386,16 @@
       </div>
     </div>
 
+    <!-- AUDIO QUALITY (visible uniquement si Audio Only actif) -->
+    <div id="audio-quality-row" style="display:none;">
+      <p class="section-label">Audio Quality</p>
+      <div class="pills" id="audio-quality-pills">
+        <button class="pill" data-value="128">128 kbps</button>
+        <button class="pill active" data-value="192">192 kbps</button>
+        <button class="pill" data-value="320">320 kbps</button>
+      </div>
+    </div>
+
     <!-- LOG -->
     <div>
       <p class="section-label">Log</p>
@@ -433,6 +443,7 @@
 
     initPillGroup('quality-pills');
     initPillGroup('format-pills');
+    initPillGroup('audio-quality-pills');
 
     function getActivePill(groupId) {
       var active = document.querySelector('#' + groupId + ' .pill.active');
@@ -440,8 +451,10 @@
     }
 
     // ── AUDIO TOGGLE ───────────────────────────────────────────────────────
+    var audioQualityRow = document.getElementById('audio-quality-row');
     btnAudio.addEventListener('click', function () {
       btnAudio.classList.toggle('active');
+      audioQualityRow.style.display = isAudioOnly() ? 'block' : 'none';
     });
 
     function isAudioOnly() {
@@ -509,6 +522,7 @@
       formData.append('quality',    quality);
       formData.append('format',     format);
       formData.append('audio_only', audio ? '1' : '0');
+      formData.append('audio_quality', getActivePill('audio-quality-pills') || '192');
       formData.append('playlist',   playlist ? '1' : '0');
 
       fetch('/download', {
